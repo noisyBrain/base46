@@ -2,7 +2,58 @@
 
 - This plugin's a whole re-write of Norcalli's plugin.
  
-(Note: This theme plugin is supposed to be used along with [NvChad](https://github.com/NvChad/NvChad) only so watchout!)
+## Installation
+
+Install the theme with your preferred package manager:
+
+[vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+Plug 'wuelnerdotexe/base46'
+```
+
+[lazy.nvim](https://github.com/folke/lazy.nvim)
+
+```lua
+return {
+  "wuelnerdotexe/base46",
+  lazy = false,
+  priority = 1000,
+  dependencies = "nvim-lua/plenary.nvim",
+}
+```
+
+## 🚀 Usage
+
+Enable the colorscheme:
+
+```vim
+" Vim Script
+colorscheme base46
+```
+
+```lua
+-- Lua
+vim.cmd[[colorscheme base46]]
+```
+
+## Configuration
+
+> ❗️ configuration needs to be set **BEFORE** loading the color scheme with
+> `colorscheme base46`
+
+```lua
+-- your configuration comes here
+-- or leave it empty to use the default settings
+require("base46").setup({
+  -- hl = highlights
+  hl_add = {},
+  hl_override = {},
+  changed_themes = {},
+  theme = "onedark", -- default theme
+  transparency = false,
+})
+```
 
 ## Contribute for new themes 
 
