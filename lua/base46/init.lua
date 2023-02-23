@@ -1,10 +1,10 @@
 local M = {}
 local g = vim.g
-local config = require("core.utils").load_config()
+local config = require "base46.config"
 
 M.get_theme_tb = function(type)
-  local default_path = "base46.themes." .. g.nvchad_theme
-  local user_path = "custom.themes." .. g.nvchad_theme
+  local default_path = "base46.themes." .. require("base46.config").options.theme
+  local user_path = "custom.themes." .. require("base46.config").options.theme
 
   local present1, default_theme = pcall(require, default_path)
   local present2, user_theme = pcall(require, user_path)
@@ -70,7 +70,7 @@ M.extend_default_hl = function(highlights)
   end
 
   -- transparency
-  if vim.g.transparency then
+  if require("base46.config").options.transparency then
     for key, value in pairs(glassy) do
       if highlights[key] then
         highlights[key] = M.merge_tb(highlights[key], value)
@@ -78,7 +78,7 @@ M.extend_default_hl = function(highlights)
     end
   end
 
-  local overriden_hl = M.turn_str_to_color(config.ui.hl_override)
+  local overriden_hl = M.turn_str_to_color(require("base46.config").options.hl_override)
 
   for key, value in pairs(overriden_hl) do
     if highlights[key] then
@@ -98,15 +98,41 @@ M.load_highlight = function(group)
   end
 end
 
+M._load_theme = function()
+  vim.g.colors_name = "base46"
+
+  M.load_theme()
+end
+
 M.load_theme = function()
   M.load_highlight "defaults"
   M.load_highlight "statusline"
   M.load_highlight "syntax"
-  M.load_highlight(M.turn_str_to_color(config.ui.hl_add))
+
+  for _, integration in pairs {
+    "alpha",
+    "blankline",
+    "bufferline",
+    "cmp",
+    "devicons",
+    "git",
+    "lsp",
+    "mason",
+    "notify",
+    "nvimtree",
+    "tbline",
+    "telescope",
+    "treesitter",
+    "whichkey",
+  } do
+    M.load_highlight(integration)
+  end
+
+  M.load_highlight(M.turn_str_to_color(require("base46.config").options.hl_add))
 end
 
 M.override_theme = function(default_theme, theme_name)
-  local changed_themes = config.ui.changed_themes
+  local changed_themes = require("base46.config").options.changed_themes
 
   if changed_themes[theme_name] then
     return M.merge_tb(default_theme, changed_themes[theme_name])
@@ -165,5 +191,7 @@ M.toggle_transparency = function()
     save_chadrc_data()
   end
 end
+
+M.setup = config.setup
 
 return M
