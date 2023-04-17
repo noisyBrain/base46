@@ -42,7 +42,7 @@ end
 highlights = merge_tb(highlights, user_highlights)
 
 -- local set_transparent = nvchad.load_config().ui.transparency
-if vim.g.transparency then
+if require("base46.config").options.transparency then
   highlights = merge_tb(highlights, require "base46.glassy")
 end
 

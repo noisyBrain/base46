@@ -1,10 +1,10 @@
+local config = require "base46.config"
+
 local M = {}
-local g = vim.g
-local config = require("core.utils").load_config()
 
 M.get_theme_tb = function(type)
-  local default_path = "base46.themes." .. g.nvchad_theme
-  local user_path = "custom.themes." .. g.nvchad_theme
+  local default_path = "base46.themes." .. require("base46.config").options.theme
+  local user_path = "custom.themes." .. require("base46.config").options.theme
 
   local present1, default_theme = pcall(require, default_path)
   local present2, user_theme = pcall(require, user_path)
@@ -70,7 +70,7 @@ M.extend_default_hl = function(highlights)
   end
 
   -- transparency
-  if vim.g.transparency then
+  if require("base46.config").options.transparency then
     for key, value in pairs(glassy) do
       if highlights[key] then
         highlights[key] = M.merge_tb(highlights[key], value)
@@ -78,7 +78,7 @@ M.extend_default_hl = function(highlights)
     end
   end
 
-  local overriden_hl = M.turn_str_to_color(config.ui.hl_override)
+  local overriden_hl = M.turn_str_to_color(require("base46.config").options.hl_override)
 
   for key, value in pairs(overriden_hl) do
     if highlights[key] then
@@ -98,15 +98,41 @@ M.load_highlight = function(group)
   end
 end
 
+M._load_theme = function()
+  vim.g.colors_name = "base46"
+
+  M.load_theme()
+end
+
 M.load_theme = function()
   M.load_highlight "defaults"
   M.load_highlight "statusline"
   M.load_highlight "syntax"
-  M.load_highlight(M.turn_str_to_color(config.ui.hl_add))
+
+  for _, integration in pairs {
+    "alpha",
+    "blankline",
+    "bufferline",
+    "cmp",
+    "devicons",
+    "git",
+    "lsp",
+    "mason",
+    "notify",
+    "nvimtree",
+    "tbline",
+    "telescope",
+    "treesitter",
+    "whichkey",
+  } do
+    M.load_highlight(integration)
+  end
+
+  M.load_highlight(M.turn_str_to_color(require("base46.config").options.hl_add))
 end
 
 M.override_theme = function(default_theme, theme_name)
-  local changed_themes = config.ui.changed_themes
+  local changed_themes = require("base46.config").options.changed_themes
 
   if changed_themes[theme_name] then
     return M.merge_tb(default_theme, changed_themes[theme_name])
@@ -115,55 +141,6 @@ M.override_theme = function(default_theme, theme_name)
   end
 end
 
-M.toggle_theme = function()
-  local themes = config.ui.theme_toggle
-
-  local theme1 = themes[1]
-  local theme2 = themes[2]
-
-  if g.nvchad_theme == theme1 or g.nvchad_theme == theme2 then
-    if g.toggle_theme_icon == "   " then
-      g.toggle_theme_icon = "   "
-    else
-      g.toggle_theme_icon = "   "
-    end
-  end
-
-  if g.nvchad_theme == theme1 then
-    g.nvchad_theme = theme2
-
-    require("nvchad").reload_theme()
-    require("nvchad").change_theme(theme1, theme2)
-  elseif g.nvchad_theme == theme2 then
-    g.nvchad_theme = theme1
-
-    require("nvchad").reload_theme()
-    require("nvchad").change_theme(theme2, theme1)
-  else
-    vim.notify "Set your current theme to one of those mentioned in the theme_toggle table (chadrc)"
-  end
-end
-
-M.toggle_transparency = function()
-  local transparency_status = config.ui.transparency
-  local write_data = require("nvchad").write_data
-
-  local function save_chadrc_data()
-    local old_data = "transparency = " .. tostring(transparency_status)
-    local new_data = "transparency = " .. tostring(g.transparency)
-
-    write_data(old_data, new_data)
-  end
-
-  if g.transparency then
-    g.transparency = false
-    M.load_all_highlights()
-    save_chadrc_data()
-  else
-    g.transparency = true
-    M.load_all_highlights()
-    save_chadrc_data()
-  end
-end
+M.setup = config.setup
 
 return M
